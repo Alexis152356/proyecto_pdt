@@ -120,3 +120,25 @@ Route::get('/admin/usuarios', [AdminController::class, 'listarUsuarios'])
         Route::get('/documentos/{id}', [DocumentoController::class, 'show'])
             ->name('admin.documentos.show');
     });
+
+
+    Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
+        // ... otras rutas
+        
+        // Rutas para aprobar/rechazar documentos
+        Route::post('/documentos/{id}/aprobar', [DocumentoController::class, 'aprobarDocumento'])
+             ->name('documentos.aprobar');
+             
+        Route::post('/documentos/{id}/rechazar', [DocumentoController::class, 'rechazarDocumento'])
+             ->name('documentos.rechazar');
+    });
+
+
+
+    Route::post('/documentos/{id}/aprobar', [DocumentoController::class, 'aprobarDocumento'])
+     ->name('documentos.aprobar')
+     ->middleware('auth:admin');
+
+Route::post('/documentos/{id}/rechazar', [DocumentoController::class, 'rechazarDocumento'])
+     ->name('documentos.rechazar')
+     ->middleware('auth:admin');

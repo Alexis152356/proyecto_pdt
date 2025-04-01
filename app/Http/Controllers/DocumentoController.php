@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\Usuario;
 use App\Models\Documento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +48,16 @@ class DocumentoController extends Controller
     $validated = $request->validate([
         'tipo' => 'required|in:' . implode(',', array_keys($this->tiposDocumentos)),
         'documento' => 'required|file|mimes:pdf|max:5120' // 5MB máximo
+
+        
+    ]);
+
+    Documento::create([
+        'usuario_id' => $usuario->id,
+        'tipo' => $request->tipo,
+        'nombre_archivo' => $archivo->getClientOriginalName(),
+        'ruta_archivo' => $rutaRelativa,
+        'estado' => 'pendiente' // Asegura que el estado inicial sea pendiente
     ]);
 
     $usuario = Auth::user();
@@ -174,5 +184,36 @@ public function verUsuario($id)
     ];
     
     return view('admin.ver-usuario', compact('usuario', 'tiposDocumentos'));
+}
+
+// En DocumentoController.php
+public function aprobarDocumento(Request $request, $id)
+{
+    $documento = Documento::findOrFail($id);
+    
+    $documento->update([
+        'estado' => 'aprobado',
+        'comentario' => null,
+        'revisado_at' => now(),
+        'revisado_por' => Auth::id()
+    ]);
+    
+    return back()->with('success', 'Documento aprobado correctamente');
+}
+
+public function rechazarDocumento(Request $request, $id)
+{
+    $request->validate(['comentario' => 'required|string|max:500']);
+    
+    $documento = Documento::findOrFail($id);
+    
+    $documento->update([
+        'estado' => 'rechazado',
+        'comentario' => $request->comentario,
+        'revisado_at' => now(),
+        'revisado_por' => Auth::id()
+    ]);
+    
+    return back()->with('success', 'Documento rechazado con comentarios');
 }
 }

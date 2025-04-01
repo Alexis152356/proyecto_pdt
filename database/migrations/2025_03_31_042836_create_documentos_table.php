@@ -28,6 +28,13 @@ return new class extends Migration
             ]);
             $table->string('nombre_archivo');
             $table->string('ruta_archivo');
+            
+            // Nuevos campos para el sistema de aprobación
+            $table->enum('estado', ['pendiente', 'aprobado', 'rechazado'])->default('pendiente');
+            $table->text('comentario')->nullable();
+            $table->timestamp('revisado_at')->nullable();
+            $table->foreignId('revisado_por')->nullable()->constrained('users')->onDelete('set null');
+            
             $table->timestamps();
         });
     }
