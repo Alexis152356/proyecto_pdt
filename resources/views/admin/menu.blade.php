@@ -21,15 +21,16 @@
         <p>Has iniciado sesión correctamente.</p>
 
         <div class="list-group">
-            <!-- Botón modificado para listar usuarios -->
+            <!-- Botón para listar usuarios -->
             <a href="{{ route('admin.listar.usuarios') }}" class="list-group-item list-group-item-action">
                 <i class="fas fa-users me-2"></i> Gestionar Usuarios
             </a>
             <a href="#" class="list-group-item list-group-item-action">
                 <i class="fas fa-cog me-2"></i> Configuración
             </a>
-            <a href="#" class="list-group-item list-group-item-action">
-                <i class="fas fa-chart-bar me-2"></i> Reportes
+            <!-- Botón modificado para subir archivos -->
+            <a href="{{ route('admin.archivos') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-upload me-2"></i> Subir Archivos
             </a>
         </div>
 

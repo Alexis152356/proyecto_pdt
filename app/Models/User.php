@@ -55,4 +55,11 @@ public function documentos()
 {
     return $this->hasOne(Documento::class);
 }
+
+// app/Models/User.php
+public function archivos()
+{
+    return $this->hasMany(Archivo::class);
+}
+
 }

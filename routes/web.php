@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\ArchivoController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -142,3 +143,93 @@ Route::get('/admin/usuarios', [AdminController::class, 'listarUsuarios'])
 Route::post('/documentos/{id}/rechazar', [DocumentoController::class, 'rechazarDocumento'])
      ->name('documentos.rechazar')
      ->middleware('auth:admin');
+
+
+
+// Para usuarios normales
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('usuario.dashboard'); // <- Nota el nombre aquí
+});
+
+// O si usas un controlador
+Route::get('/dashboard', [UserController::class, 'dashboard'])
+     ->name('usuario.dashboard')
+     ->middleware('auth');
+
+
+
+
+     Route::middleware(['auth'])->group(function () {
+        Route::get('/mis-documentos', [ArchivoController::class, 'verArchivos'])->name('ver_archivos');
+    });
+
+
+
+
+    Route::get('/archivos/{archivo}', [ArchivoController::class, 'show'])->name('archivos.show');
+Route::delete('/archivos/{archivo}', [ArchivoController::class, 'destroy'])->name('archivos.destroy');
+
+Route::middleware(['auth'])->group(function () {
+    Route::delete('/archivos/{archivo}', [ArchivoController::class, 'destroy'])
+         ->name('archivos.destroy');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Route::middleware(['auth'])->group(function () {
+        // Rutas para usuarios normales
+        Route::get('/mis-archivos', [ArchivoController::class, 'verArchivos'])->name('archivos.ver');
+        
+        // Rutas para administradores
+        Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
+            Route::get('/archivos', [ArchivoController::class, 'index'])->name('admin.archivos');
+            Route::post('/archivos', [ArchivoController::class, 'store'])->name('archivos.store');
+            Route::get('/archivos/{id}', [ArchivoController::class, 'show'])->name('archivos.show');
+            Route::delete('/archivos/{id}', [ArchivoController::class, 'destroy'])->name('archivos.destroy');
+            Route::post('/archivos/{id}/aprobar', [ArchivoController::class, 'aprobar'])->name('archivos.aprobar');
+            Route::post('/archivos/{id}/rechazar', [ArchivoController::class, 'rechazar'])->name('archivos.rechazar');
+        });
+    });
+
+
+
+    Route::prefix('admin')->name('admin.')->middleware(['auth:admin'])->group(function () {
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard'); // O tu controlador correspondiente
+        })->name('dashboard');
+        
+        // ... otras rutas de admin
+    });
+
+
+
+
+
+    Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
+        // Cambia todas las rutas de 'documentos' a 'archivos'
+        Route::get('/archivos', [ArchivoController::class, 'index'])->name('admin.archivos');
+        Route::post('/archivos', [ArchivoController::class, 'store'])->name('archivos.store');
+        Route::get('/archivos/{id}', [ArchivoController::class, 'show'])->name('archivos.show');
+        Route::delete('/archivos/{id}', [ArchivoController::class, 'destroy'])->name('archivos.destroy');
+    });
+
+    

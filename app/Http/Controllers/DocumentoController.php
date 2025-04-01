@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Usuario;
+
 use App\Models\Documento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -48,16 +48,6 @@ class DocumentoController extends Controller
     $validated = $request->validate([
         'tipo' => 'required|in:' . implode(',', array_keys($this->tiposDocumentos)),
         'documento' => 'required|file|mimes:pdf|max:5120' // 5MB máximo
-
-        
-    ]);
-
-    Documento::create([
-        'usuario_id' => $usuario->id,
-        'tipo' => $request->tipo,
-        'nombre_archivo' => $archivo->getClientOriginalName(),
-        'ruta_archivo' => $rutaRelativa,
-        'estado' => 'pendiente' // Asegura que el estado inicial sea pendiente
     ]);
 
     $usuario = Auth::user();

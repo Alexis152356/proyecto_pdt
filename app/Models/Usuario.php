@@ -21,7 +21,7 @@ class Usuario extends Authenticatable
         'password', 
         'foto',
         'remember_token',
-        'email_verified_at' // Añadir si usas verificación de email
+        'email_verified_at'
     ];
 
     protected $hidden = [
@@ -33,11 +33,14 @@ class Usuario extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-  
-
     public function documentos()
     {
         return $this->hasMany(Documento::class, 'usuario_id');
-        //                clave foránea aquí ^^^^^^^^^^
+    }
+
+    public function archivos()
+    {
+        return $this->hasMany(Archivo::class, 'user_id');
     }
 }
+// Asegúrate que no haya nada (ni siquiera espacios) después de esta línea

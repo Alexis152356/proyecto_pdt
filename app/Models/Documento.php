@@ -50,4 +50,7 @@ class Documento extends Model
     {
         return $this->created_at ? Carbon::parse($this->created_at)->format('d/m/Y H:i') : null;
     }
+
+
+ 
 }
