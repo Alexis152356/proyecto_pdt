@@ -66,7 +66,7 @@
         }
 
         .image-container img {
-            width: 550px; /* Aumenté el tamaño de la imagen */
+            width: 550px;
         }
 
         h1 {
@@ -74,6 +74,16 @@
             text-align: center;
             font-size: 2rem;
             margin-bottom: 20px;
+        }
+
+        .register-link {
+            display: block;
+            margin-top: 15px;
+            font-size: 16px;
+            color: black;
+        }
+        .register-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -102,9 +112,11 @@
                     <button type="submit" class="btn btn-dark w-100">Iniciar Sesión</button>
                 </div>
             </form>
+            <!-- Enlace para el registro de administrador -->
+            <a href="{{ route('admin.register') }}" class="register-link">¿No tienes cuenta? Regístrate aquí</a>
         </div>
         <div class="image-container">
-        <img src="{{ asset('img/image1.png') }}" alt="Ilustración">
+            <img src="{{ asset('img/image1.png') }}" alt="Ilustración">
         </div>
     </div>
 

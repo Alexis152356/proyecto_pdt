@@ -15,17 +15,16 @@
             position: relative;
         }
         .container {
-    display: flex;
-    justify-content: space-between;
-    width: 80%;
-    margin-top: 50px; /* Ajusta este valor según lo necesites */
-}
-
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 50px;
+        }
         .login-box {
             background-color: orange;
             padding: 70px;
             border-radius: 25px;
-            width: 400px; /* Aumenté el tamaño del cuadro */
+            width: 400px;
             text-align: center;
         }
         .login-box input {
@@ -60,7 +59,16 @@
             width: 150px;
         }
         .image-container img {
-            width: 550px; /* Aumenté el tamaño de la imagen */
+            width: 550px;
+        }
+        .register-link {
+            display: block;
+            margin-top: 15px;
+            font-size: 16px;
+            color: black;
+        }
+        .register-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -84,6 +92,7 @@
                 <br>
                 <button type="submit">Iniciar</button>
             </form>
+            <a href="{{ route('register') }}" class="register-link">¿No tienes cuenta? Regístrate aquí</a>
         </div>
         <div class="image-container">
             <img src="img/image1.png" alt="Ilustración">

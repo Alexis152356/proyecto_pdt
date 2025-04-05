@@ -10,7 +10,7 @@ use App\Http\Controllers\CartaUsuarioController;
 use App\Http\Controllers\CartaAdminController;
 // Rutas públicas
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::get('create', function () {
@@ -320,3 +320,9 @@ Route::post('/admin/cartas/responder/{id}', [CartaAdminController::class, 'respo
 
 
      Route::get('/admin/limpiar-duplicados', [CartaAdminController::class, 'limpiarDuplicados']);
+
+
+
+
+
+     Route::post('/register', [AuthController::class, 'register'])->name('register');

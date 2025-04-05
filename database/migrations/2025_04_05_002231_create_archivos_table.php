@@ -8,15 +8,21 @@ return new class extends Migration
 {
     public function up()
     {
+        // Primero verificar/crear la tabla users si no existe
+        if (!Schema::hasTable('users')) {
+            Schema::create('users', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+                $table->timestamps();
+            });
+        }
+
+        // Crear tabla archivos sin relaciones inicialmente
         Schema::create('archivos', function (Blueprint $table) {
             $table->id();
-            
-            // Cambia esto según tu estructura real:
-            // Opción 1: Si usas users normales
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
-            // Opción 2: Si usas admins como en tu modelo
-            // $table->foreignId('admin_id')->constrained('admins')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id'); // Temporalmente sin FK
+            $table->unsignedBigInteger('revisado_por')->nullable();
             
             $table->enum('tipo', [
                 'PERFIL DE PUESTO TECNÓLOGO',
@@ -36,17 +42,38 @@ return new class extends Migration
             $table->enum('estado', ['pendiente', 'aprobado', 'rechazado'])->default('pendiente');
             $table->text('comentario')->nullable();
             $table->timestamp('revisado_at')->nullable();
-            $table->foreignId('revisado_por')->nullable()->constrained('users')->onDelete('set null');
-            
             $table->timestamps();
-            
-            // Asegúrate que las columnas referenciadas existan
-            $table->index(['user_id', 'tipo']);
+        });
+
+        // Agregar relaciones después con verificación
+        Schema::table('archivos', function (Blueprint $table) {
+            // Verificar que exista la columna id en users
+            if (Schema::hasColumn('users', 'id')) {
+                $table->foreign('user_id')
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('cascade');
+                
+                $table->foreign('revisado_por')
+                    ->references('id')
+                    ->on('users')
+                    ->onDelete('set null');
+            }
         });
     }
 
     public function down()
     {
+        Schema::table('archivos', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['revisado_por']);
+        });
+        
         Schema::dropIfExists('archivos');
+        
+        // Opcional: eliminar users si lo creamos aquí
+        if (Schema::hasTable('users') && !Schema::hasTable('personal_access_tokens')) {
+            Schema::dropIfExists('users');
+        }
     }
 };

@@ -31,7 +31,7 @@ return new class extends Migration
     
             
             // Índice compuesto para evitar duplicados
-            $table->unique(['usuario_id', 'tipo']);
+           
         });
     }
 

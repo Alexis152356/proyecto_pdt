@@ -134,6 +134,23 @@ return [
         'provider' => 'admins',
     ],
 ],
+
+
+
+'guards' => [
+    'admin' => [
+        'driver' => 'session',
+        'provider' => 'admins',
+    ],
+],
+
+'providers' => [
+    'admins' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Admin::class,
+    ],
+],
+
 ],
     /*
     |--------------------------------------------------------------------------

@@ -55,7 +55,11 @@
 <body>
     <div class="header">
     <img src="/img/logo-blue.svg" alt="Logo">
-        <button class="logout-button">Cerrar Sesión</button>
+    <form action="{{ route('admin.logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="logout-button">Cerrar Sesión</button>
+</form>
+
     </div>
     <div class="container-content">
     <h1>Bienvenido</h1>
