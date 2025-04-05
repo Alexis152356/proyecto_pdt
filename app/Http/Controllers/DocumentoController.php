@@ -12,6 +12,7 @@ class DocumentoController extends Controller
 {
     // Tipos de documentos configurados según tu migración
     private $tiposDocumentos = [
+        'contrato' => 'CONTRATO (Documento principal)', 
         'cv' => 'CV (Currículum Vitae)',
         'carta_invitacion' => 'Carta de invitación del Corporativo AB FORTI (firmada)',
         'acta_nacimiento' => 'Acta de Nacimiento',
@@ -205,5 +206,18 @@ public function rechazarDocumento(Request $request, $id)
     ]);
     
     return back()->with('success', 'Documento rechazado con comentarios');
+}
+
+public function revisarCartas(Request $request, $usuario_id = null)
+{
+    $query = Carta::with('user');
+    
+    if ($usuario_id) {
+        $query->where('user_id', $usuario_id);
+    }
+    
+    $cartas = $query->get();
+    
+    return view('admin.cartas.revisar', compact('cartas'));
 }
 }

@@ -6,7 +6,8 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\ArchivoController;
-
+use App\Http\Controllers\CartaUsuarioController;
+use App\Http\Controllers\CartaAdminController;
 // Rutas públicas
 Route::get('/', function () {
     return view('welcome');
@@ -194,7 +195,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-
      Route::middleware(['auth'])->group(function () {
         // Rutas para usuarios normales
         Route::get('/mis-archivos', [ArchivoController::class, 'verArchivos'])->name('archivos.ver');
@@ -233,3 +233,90 @@ Route::middleware(['auth'])->group(function () {
     });
 
     
+
+
+
+
+
+
+// Para usuarios normales
+Route::middleware(['auth'])->prefix('cartas')->group(function () {
+    Route::get('/', [CartaUsuarioController::class, 'index'])->name('cartas.index');
+    Route::post('/', [CartaUsuarioController::class, 'store'])->name('cartas.store');
+});
+
+// Para admin (versión limpia y consistente)
+Route::prefix('admin')->middleware(['auth:admin'])->name('admin.')->group(function () {
+    Route::prefix('cartas')->group(function () {
+        Route::get('/', [CartaAdminController::class, 'index'])->name('cartas.index');
+        Route::post('/responder/{id}', [CartaAdminController::class, 'responder'])->name('cartas.responder');
+    });
+});
+
+Route::post('/cartas/{id}/subir-respuesta/{tipo}', [CartaAdminController::class, 'subirRespuesta'])
+     ->name('admin.cartas.subir-respuesta');
+
+Route::delete('/cartas/{id}/eliminar-respuesta/{tipo}', [CartaAdminController::class, 'eliminarRespuesta'])
+     ->name('admin.cartas.eliminar-respuesta');
+
+
+
+
+
+
+    
+
+
+     Route::post('/admin/cartas/{id}/responder', [CartaAdminController::class, 'responder'])
+    ->name('admin.cartas.responder')
+    ->middleware('auth'); // Asegúrate de proteger esta ruta
+
+
+
+
+    // Rutas para el administrador
+Route::prefix('admin')->group(function() {
+    Route::get('/cartas', [CartaAdminController::class, 'index'])->name('admin.cartas.index');
+    Route::post('/cartas/{id}/subir-respuesta/{tipo}', [CartaAdminController::class, 'subirRespuesta'])->name('admin.cartas.subir-respuesta');
+    Route::delete('/cartas/{id}/eliminar-respuesta/{tipo}', [CartaAdminController::class, 'eliminarRespuesta'])->name('admin.cartas.eliminar-respuesta');
+    Route::post('/cartas/{id}/responder', [CartaAdminController::class, 'responder'])->name('admin.cartas.responder');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// routes/web.php o routes/admin.php
+
+
+// Ruta para revisar cartas con filtro opcional por usuario
+Route::get('/admin/cartas/revisar/{usuario_id?}', [CartaAdminController::class, 'index'])
+     ->name('admin.revisar.cartas')
+     ->middleware('auth'); // Añade middlewares si es necesario
+
+// Rutas para las acciones de cartas (ya las tienes)
+Route::post('/admin/cartas/subir-respuesta/{id}/{tipo}', [CartaAdminController::class, 'subirRespuesta'])
+     ->name('admin.cartas.subir-respuesta');
+
+Route::delete('/admin/cartas/eliminar-respuesta/{id}/{tipo}', [CartaAdminController::class, 'eliminarRespuesta'])
+     ->name('admin.cartas.eliminar-respuesta');
+
+Route::post('/admin/cartas/responder/{id}', [CartaAdminController::class, 'responder'])
+     ->name('admin.cartas.responder');
+
+
+     Route::get('/admin/limpiar-duplicados', [CartaAdminController::class, 'limpiarDuplicados']);

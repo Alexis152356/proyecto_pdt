@@ -6,6 +6,7 @@
     <title>Listado de Usuarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Tarjetas de usuario */
         .user-card {
             border-radius: 10px;
             overflow: hidden;
@@ -24,6 +25,36 @@
             position: absolute;
             top: 10px;
             right: 10px;
+        }
+
+        /* Botones azul fuerte */
+        .btn-primary {
+            background-color: #0033A0; /* Azul fuerte */
+            border-color: #0033A0;
+        }
+        .btn-primary:hover {
+            background-color: #002080; /* Azul más oscuro */
+            border-color: #002080;
+        }
+
+        /* Borde inferior anaranjado más grande */
+        .bottom-border {
+            width: 100%;
+            height: 100px; /* Aumentado el tamaño del borde */
+            background-color: #FF8000; /* Anaranjado */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* Imagen en la parte inferior */
+        .bottom-image {
+            position: absolute;
+            bottom: 10px;
+            left: 90%;
+            transform: translateX(-50%);
+            max-width: 250px; /* Ajustar tamaño según necesidad */
         }
     </style>
 </head>
@@ -76,6 +107,12 @@
             @endforeach
         </div>
     </div>
+
+    <!-- Borde inferior anaranjado más grande -->
+    <div class="bottom-border"></div>
+
+    <!-- Imagen en la parte inferior -->
+    <img src="\img\image6.png" alt="Imagen de logística" class="bottom-image">
 
     <!-- Iconos y JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>

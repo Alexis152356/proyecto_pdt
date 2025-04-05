@@ -6,44 +6,74 @@
     <title>Menú de Administrador</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .user-card {
-            transition: all 0.3s ease;
+        body {
+            background-color: #0D1B63;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
-        .user-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        .header {
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+        }
+        .logout-button {
+            background-color: black;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container-content {
+            background-color: #D3D3D3;
+            padding: 50px;
+            text-align: center;
+            position: relative;
+        }
+        .btn-orange {
+            background-color: #FF6600;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .image-container {
+            position: absolute;
+            bottom: 20px;
+            right: 50px;
+        }
+        .footer {
+            background-color: #0D1B63;
+            height: 50px;
         }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <h1>Bienvenido al Menú de Administrador</h1>
-        <p>Has iniciado sesión correctamente.</p>
-
-        <div class="list-group">
-            <!-- Botón para listar usuarios -->
-            <a href="{{ route('admin.listar.usuarios') }}" class="list-group-item list-group-item-action">
-                <i class="fas fa-users me-2"></i> Gestionar Usuarios
-            </a>
-            <a href="#" class="list-group-item list-group-item-action">
-                <i class="fas fa-cog me-2"></i> Configuración
-            </a>
-            <!-- Botón modificado para subir archivos -->
-            <a href="{{ route('admin.archivos') }}" class="list-group-item list-group-item-action">
-                <i class="fas fa-file-upload me-2"></i> Subir Archivos
-            </a>
-        </div>
-
-        <form action="{{ route('admin.logout') }}" method="POST" class="mt-3">
-            @csrf
-            <button type="submit" class="btn btn-danger">
-                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-            </button>
-        </form>
+    <div class="header">
+    <img src="/img/logo-blue.svg" alt="Logo">
+        <button class="logout-button">Cerrar Sesión</button>
     </div>
+    <div class="container-content">
+    <h1>Bienvenido</h1>
+    <br><br>
+        <a href="{{ route('admin.listar.usuarios') }}" class="btn-orange">Gestionar Usuarios</a>
+        <br><br><br>
+        <a href="{{ route('admin.archivos') }}" class="btn-orange"> Subir Archivos</a>
 
-    <!-- Iconos de Font Awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+       
+
+        <div class="image-container">
+        <img src="/img/image4.png" alt="Worker" width="150">
+
+
+           
+        </div>
+    </div>
+    <div class="footer"></div>
 </body>
 </html>

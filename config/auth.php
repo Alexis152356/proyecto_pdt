@@ -127,6 +127,13 @@ return [
         'driver' => 'eloquent',
         'model' => App\Models\Admin::class, // Asegúrate que este modelo existe
     ],
+
+    'guards' => [
+    'admin' => [
+        'driver' => 'session',
+        'provider' => 'admins',
+    ],
+],
 ],
     /*
     |--------------------------------------------------------------------------

@@ -2,39 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\Archivo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ArchivoController extends Controller
 {
-    // Tipos de documentos permitidos
+    // Tipos de documentos permitidos (updated)
     private $tiposPermitidos = [
-        'cv' => 'Currículum Vitae',
-        'carta_invitacion' => 'Carta de Invitación',
-        'acta_nacimiento' => 'Acta de Nacimiento',
-        'ine' => 'INE/Identificación',
-        'curp' => 'CURP',
-        'rfc' => 'RFC',
-        'comprobante_domicilio' => 'Comprobante de Domicilio',
-        'certificado_medico' => 'Certificado Médico'
+        'PERFIL DE PUESTO TECNÓLOGO' => 'Perfil de Puesto Tecnólogo',
+        'GENERALIDADES DEL PROGRAMA DE PDT' => 'Generalidades del Programa de PDT',
+        'LISTA DE DOCUMENTOS UPPER' => 'Lista de Documentos UPPER',
+        'CONDUCTAS EN ALMACÉN' => 'Conductas en Almacén',
+        'FORMATO DE ESTUDIO SOCIOECONOMICO SOLGISTIKA' => 'Formato de Estudio Socioeconómico Solgistika',
+        'TRAMITE EN LINEA' => 'Trámite en Línea',
+        'FOTOS' => 'Fotos',
+        'Ficha de datos para dar de alta' => 'Ficha de Datos para Alta'
     ];
 
     public function index()
     {
         $documentos = Auth::user()->archivos()
                         ->get()
-                        ->keyBy('tipo'); // Esto agrupa por tipo para el acceso $documentos[$tipo]
+                        ->keyBy('tipo');
         
         return view('admin.subir_archivos', [
             'documentos' => $documentos,
             'tiposDocumentos' => $this->tiposPermitidos
         ]);
     }
-    // Almacenar nuevo archivo
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -46,9 +46,9 @@ class ArchivoController extends Controller
         $archivo = $request->file('documento');
     
         // Generar nombre único para el archivo
-        $nombreArchivo = 'doc_'.$usuario->id.'_'.$request->tipo.'_'.time().'.pdf';
+        $nombreArchivo = 'doc_'.$usuario->id.'_'.Str::slug($request->tipo).'_'.time().'.pdf';
         
-        // Guardar usando el disco 'public' (esto crea la carpeta si no existe)
+        // Guardar usando el disco 'public'
         $ruta = $archivo->storeAs('archivos', $nombreArchivo, 'public');
     
         // Eliminar archivo existente del mismo tipo
@@ -59,15 +59,15 @@ class ArchivoController extends Controller
             'user_id' => $usuario->id,
             'tipo' => $request->tipo,
             'nombre_original' => $archivo->getClientOriginalName(),
-            'ruta' => $ruta,  // Esto guardará "archivos/nombrearchivo.pdf"
+            'ruta' => $ruta,
             'mime_type' => $archivo->getMimeType(),
             'tamano' => $archivo->getSize(),
-            'estado' => 'pendiente'
+            
         ]);
     
         return back()->with('success', 'Archivo subido correctamente');
     }
-    // Mostrar archivo
+
     public function show($id)
     {
         $archivo = Archivo::findOrFail($id);
@@ -83,23 +83,19 @@ class ArchivoController extends Controller
         return response()->file(storage_path('app/public/' . $archivo->ruta));
     }
 
-  
     public function destroy($id)
     {
         $archivo = Archivo::findOrFail($id);
     
-        // Verificación más detallada
         if (Auth::user()->id !== $archivo->user_id) {
             abort(403, 'No tienes permiso para eliminar este archivo');
         }
     
         try {
-            // Eliminar archivo físico
             if (Storage::disk('public')->exists($archivo->ruta)) {
                 Storage::disk('public')->delete($archivo->ruta);
             }
     
-            // Eliminar registro
             $archivo->delete();
     
             return back()->with('success', 'Archivo eliminado correctamente');
@@ -108,7 +104,7 @@ class ArchivoController extends Controller
             return back()->with('error', 'Error al eliminar el archivo: '.$e->getMessage());
         }
     }
-    // Aprobar archivo (admin)
+
     public function aprobar($id)
     {
         $archivo = Archivo::findOrFail($id);
@@ -123,7 +119,6 @@ class ArchivoController extends Controller
         return back()->with('success', 'Archivo aprobado correctamente');
     }
 
-    // Rechazar archivo (admin)
     public function rechazar(Request $request, $id)
     {
         $request->validate(['comentario' => 'required|string|max:500']);
@@ -140,19 +135,10 @@ class ArchivoController extends Controller
         return back()->with('success', 'Archivo rechazado con comentarios');
     }
 
-    // Vista para ver archivos (usuario)
     public function verArchivos()
     {
-        // Obtener documentos del usuario autenticado
         $documentos = Auth::user()->archivos()->get();
         
-        // Tipos de documentos permitidos (deberías definirlos o pasarlos desde el controlador)
-        $tiposDocumentos = [
-            'cv' => 'Currículum Vitae',
-            'carta_invitacion' => 'Carta de Invitación',
-            // ... otros tipos
-        ];
-    
         return view('usuarios.ver_archivos', [
             'documentos' => $documentos,
             'tiposDocumentos' => $this->tiposPermitidos
@@ -160,16 +146,16 @@ class ArchivoController extends Controller
     }
 
     private function eliminarArchivoExistente($userId, $tipo)
-{
-    $archivo = Archivo::where('user_id', $userId)
-                     ->where('tipo', $tipo)
-                     ->first();
+    {
+        $archivo = Archivo::where('user_id', $userId)
+                         ->where('tipo', $tipo)
+                         ->first();
 
-    if ($archivo) {
-        if (Storage::disk('public')->exists($archivo->ruta)) {
-            Storage::disk('public')->delete($archivo->ruta);
+        if ($archivo) {
+            if (Storage::disk('public')->exists($archivo->ruta)) {
+                Storage::disk('public')->delete($archivo->ruta);
+            }
+            $archivo->delete();
         }
-        $archivo->delete();
     }
-}
 }

@@ -47,7 +47,7 @@ class User extends Authenticatable
     }
 
     // En el modelo User.php
-
+    protected $dates = ['deleted_at']; // Opcional (ya no es necesario en Laravel 9+)
 
 
 // App\Models\User.php
@@ -61,5 +61,11 @@ public function archivos()
 {
     return $this->hasMany(Archivo::class);
 }
+
+public function cartas()
+{
+    return $this->hasOne(Carta::class);
+}
+
 
 }
