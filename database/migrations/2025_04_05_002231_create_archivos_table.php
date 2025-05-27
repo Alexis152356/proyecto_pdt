@@ -8,20 +8,27 @@ return new class extends Migration
 {
     public function up()
     {
-        // Primero verificar/crear la tabla users si no existe
-        if (!Schema::hasTable('users')) {
-            Schema::create('users', function (Blueprint $table) {
+        // Primero verificar/crear la tabla usuarios si no existe
+        if (!Schema::hasTable('usuarios')) {
+            Schema::create('usuarios', function (Blueprint $table) {
                 $table->id();
-                $table->string('name');
-                $table->string('email')->unique();
+                $table->string('nombre');
+                $table->string('correo')->unique();
+                $table->string('password');
+                $table->integer('edad')->nullable();
+                $table->string('universidad')->nullable();
+                $table->string('genero')->nullable();
+                $table->string('foto')->nullable();
+                $table->rememberToken();
+                $table->timestamp('email_verified_at')->nullable();
                 $table->timestamps();
             });
         }
 
-        // Crear tabla archivos sin relaciones inicialmente
+        // Crear tabla archivos
         Schema::create('archivos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // Temporalmente sin FK
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('revisado_por')->nullable();
             
             $table->enum('tipo', [
@@ -43,37 +50,49 @@ return new class extends Migration
             $table->text('comentario')->nullable();
             $table->timestamp('revisado_at')->nullable();
             $table->timestamps();
+
+            // Índices para mejorar el rendimiento
+            $table->index('user_id');
+            $table->index('tipo');
+            $table->index('estado');
         });
 
-        // Agregar relaciones después con verificación
+        // Agregar relaciones después de crear ambas tablas
         Schema::table('archivos', function (Blueprint $table) {
-            // Verificar que exista la columna id en users
-            if (Schema::hasColumn('users', 'id')) {
+            // Verificar que existan las tablas y columnas
+            if (Schema::hasTable('usuarios') && Schema::hasColumn('usuarios', 'id')) {
                 $table->foreign('user_id')
                     ->references('id')
-                    ->on('users')
-                    ->onDelete('cascade');
+                    ->on('usuarios')
+                    ->onDelete('cascade')
+                    ->onUpdate('cascade');
                 
                 $table->foreign('revisado_por')
                     ->references('id')
-                    ->on('users')
-                    ->onDelete('set null');
+                    ->on('usuarios')
+                    ->onDelete('set null')
+                    ->onUpdate('cascade');
             }
         });
     }
 
     public function down()
     {
+        // Eliminar las claves foráneas primero
         Schema::table('archivos', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
             $table->dropForeign(['revisado_por']);
+            $table->dropIndex(['user_id']);
+            $table->dropIndex(['tipo']);
+            $table->dropIndex(['estado']);
         });
         
+        // Eliminar las tablas
         Schema::dropIfExists('archivos');
         
-        // Opcional: eliminar users si lo creamos aquí
-        if (Schema::hasTable('users') && !Schema::hasTable('personal_access_tokens')) {
-            Schema::dropIfExists('users');
+        // Opcional: eliminar usuarios solo si fue creada aquí
+        if (Schema::hasTable('usuarios') && !Schema::hasTable('personal_access_tokens')) {
+            Schema::dropIfExists('usuarios');
         }
     }
 };

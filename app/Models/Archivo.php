@@ -4,14 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 class Archivo extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'user_id',          // Asegúrate que coincida con la migración
         'tipo',
         'nombre_original',
         'ruta',
@@ -20,30 +19,35 @@ class Archivo extends Model
         'estado',
         'comentario',
         'revisado_at',
-        'revisado_por'
+        'revisado_por'      // Debe coincidir con la migración
     ];
 
     protected $casts = [
         'revisado_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
     ];
 
+    // Relación con el usuario propietario (CORREGIDA)
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'usuario_id');
-    }
-    public function admin()
-    {
-        return $this->belongsTo(Admin::class);
+        return $this->belongsTo(Usuario::class, 'user_id'); // Coincide con fillable y migración
     }
 
+    // Relación con el revisor (CORREGIDA)
     public function revisor()
     {
-        return $this->belongsTo(User::class, 'revisado_por');
+        return $this->belongsTo(Usuario::class, 'revisado_por'); // Usa mismo modelo que usuario
     }
 
-    // Accesores
+    // Eliminar relación admin() si no es necesaria
+    // O corregirla si existe tabla admins:
+    /*
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id');
+    }
+    */
+
+    // Accesores (perfectos, se mantienen)
     public function getTamanoFormateadoAttribute()
     {
         $bytes = $this->tamano;
@@ -53,13 +57,12 @@ class Archivo extends Model
             return number_format($bytes / 1048576, 2) . ' MB';
         } elseif ($bytes >= 1024) {
             return number_format($bytes / 1024, 2) . ' KB';
-        } else {
-            return $bytes . ' bytes';
         }
+        return $bytes . ' bytes';
     }
 
     public function getFechaRevisadoFormateadaAttribute()
     {
-        return $this->revisado_at ? $this->revisado_at->format('d/m/Y H:i') : null;
+        return $this->revisado_at?->format('d/m/Y H:i');
     }
 }
