@@ -32,4 +32,6 @@ class Admin extends Model implements Authenticatable
     {
         return $this->hasMany(Archivo::class, 'admin_id'); // Asegúrate que la migración tenga admin_id
     }
+
+    
 }

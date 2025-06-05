@@ -4,28 +4,26 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\Archivo;
-use App\Models\Usuario; // Asegúrate de usar el modelo correcto
+use App\Models\TipoDocumento;
+use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ArchivoController extends Controller
 {
-    // Tipos de documentos permitidos
-    private $tiposPermitidos = [
-        'PERFIL DE PUESTO TECNÓLOGO' => 'Perfil de Puesto Tecnólogo',
-        'GENERALIDADES DEL PROGRAMA DE PDT' => 'Generalidades del Programa de PDT',
-        'LISTA DE DOCUMENTOS UPPER' => 'Lista de Documentos UPPER',
-        'CONDUCTAS EN ALMACÉN' => 'Conductas en Almacén',
-        'FORMATO DE ESTUDIO SOCIOECONOMICO SOLGISTIKA' => 'Formato de Estudio Socioeconómico Solgistika',
-        'TRAMITE EN LINEA' => 'Trámite en Línea',
-        'FOTOS' => 'Fotos',
-        'Ficha de datos para dar de alta' => 'Ficha de Datos para Alta'
-    ];
+    protected $tiposDocumentos = [];
+
+    public function __construct()
+    {
+        // Cargar tipos de documentos desde la base de datos
+        $this->tiposDocumentos = TipoDocumento::where('activo', true)
+            ->pluck('nombre', 'clave')
+            ->toArray();
+    }
 
     public function index()
     {
-        // Verificación adicional de usuario autenticado
         if (!Auth::check()) {
             abort(403, 'Debes iniciar sesión');
         }
@@ -36,44 +34,59 @@ class ArchivoController extends Controller
         
         return view('admin.subir_archivos', [
             'documentos' => $documentos,
-            'tiposDocumentos' => $this->tiposPermitidos
+            'tiposDocumentos' => $this->tiposDocumentos
+        ]);
+    }
+
+    public function addDocumentType(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Debes iniciar sesión'], 403);
+        }
+
+        $validated = $request->validate([
+            'clave' => 'required|string|max:100|unique:tipo_documentos,clave',
+            'nombre' => 'required|string|max:150'
+        ]);
+
+        // Crear el nuevo tipo de documento
+        $tipoDocumento = TipoDocumento::create([
+            'clave' => $validated['clave'],
+            'nombre' => $validated['nombre'],
+            'custom' => true,
+            'activo' => true
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tipo de documento creado exitosamente',
+            'tipo' => $tipoDocumento->clave,
+            'nombre' => $tipoDocumento->nombre
         ]);
     }
 
     public function store(Request $request)
     {
-        // Validación de autenticación
         if (!Auth::check()) {
             return back()->with('error', 'Debes iniciar sesión para subir archivos');
         }
 
         $usuario = Auth::user();
         
-        // Verificación explícita de que el usuario existe en BD
-        if (!$usuario->exists) {
-            return back()->with('error', 'Usuario no válido');
-        }
-
         $validated = $request->validate([
-            'tipo' => 'required|in:' . implode(',', array_keys($this->tiposPermitidos)),
-            'documento' => 'required|file|mimes:pdf|max:5120' // 5MB máximo
+            'tipo' => 'required|exists:tipo_documentos,clave',
+            'documento' => 'required|file|mimes:pdf|max:5120'
         ]);
 
         try {
             $archivo = $request->file('documento');
-            
-            // Generar nombre único para el archivo
             $nombreArchivo = 'doc_'.$usuario->id.'_'.Str::slug($request->tipo).'_'.time().'.pdf';
-            
-            // Guardar usando el disco 'public'
             $ruta = $archivo->storeAs('archivos', $nombreArchivo, 'public');
 
-            // Eliminar archivo existente del mismo tipo
             $this->eliminarArchivoExistente($usuario->id, $request->tipo);
 
-            // Crear registro en la base de datos
             Archivo::create([
-                'user_id' => $usuario->id, // Usa el ID del usuario autenticado
+                'user_id' => $usuario->id,
                 'tipo' => $request->tipo,
                 'nombre_original' => $archivo->getClientOriginalName(),
                 'ruta' => $ruta,
@@ -88,7 +101,7 @@ class ArchivoController extends Controller
         }
     }
 
-    public function show($id)
+     public function show($id)
     {
         $archivo = Archivo::findOrFail($id);
         
@@ -168,17 +181,24 @@ class ArchivoController extends Controller
         return back()->with('success', 'Archivo rechazado con comentarios');
     }
 
-    public function verArchivos()
-    {
-        $documentos = Auth::user()->archivos()
-                        ->orderBy('created_at', 'desc')
-                        ->get();
-        
-        return view('usuarios.ver_archivos', [
-            'documentos' => $documentos,
-            'tiposDocumentos' => $this->tiposPermitidos
-        ]);
-    }
+   public function verArchivos()
+{
+    $documentos = Auth::user()->archivos()
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+    // Obtener los tipos de documentos desde la base de datos
+    $tiposDocumentos = TipoDocumento::where('activo', true)
+                      ->pluck('nombre', 'clave')
+                      ->toArray();
+
+    return view('usuarios.ver_archivos', [
+        'documentos' => $documentos,
+        'tiposDocumentos' => $tiposDocumentos
+    ]);
+}
+
+    // ... (mantén los demás métodos show, destroy, aprobar, rechazar, verArchivos iguales)
 
     private function eliminarArchivoExistente($userId, $tipo)
     {

@@ -40,6 +40,19 @@
             right: 10px;
             width: 150px;
         }
+        #loadingIndicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -58,9 +71,27 @@
                 <a href="{{ route('admin.listar.usuarios') }}" class="btn btn-secondary me-2">
                     <i class="fas fa-arrow-left me-2"></i> Volver a Usuarios
                 </a>
+                @if(!$usuario->documentos->isEmpty())
+                <button id="descargarTodosBtn" class="btn btn-info me-2">
+                    <i class="fas fa-file-pdf me-1"></i> Descargar Todos
+                </button>
+                @endif
                 <a href="{{ route('admin.revisar.cartas', ['usuario_id' => $usuario->id]) }}" class="btn btn-primary">
                     <i class="fas fa-envelope me-2"></i> Revisar Cartas
                 </a>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-3">Combinando documentos, por favor espere...</p>
+                <div class="progress mt-2" style="width: 50%; margin: 0 auto;">
+                    <div id="combineProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
             </div>
         </div>
 
@@ -162,5 +193,86 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Librerías para combinar PDFs -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const descargarTodosBtn = document.getElementById('descargarTodosBtn');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const progressBar = document.getElementById('combineProgress');
+            
+            if (descargarTodosBtn) {
+                descargarTodosBtn.addEventListener('click', async function() {
+                    loadingIndicator.style.display = 'flex';
+                    
+                    try {
+                        // 1. Obtener todos los enlaces de visualización (no los de descarga)
+                        const viewLinks = document.querySelectorAll('a.btn-outline-primary[target="_blank"]');
+                        const pdfUrls = Array.from(viewLinks).map(link => {
+                            // Convertir enlace de visualización a enlace de descarga
+                            return link.href.includes('?') ? 
+                                   link.href + '&download=1' : 
+                                   link.href + '?download=1';
+                        });
+                        
+                        console.log('URLs encontradas:', pdfUrls); // Para depuración
+                        
+                        if (pdfUrls.length === 0) {
+                            alert('No se encontraron documentos para descargar');
+                            return;
+                        }
+                        
+                        // 2. Combinar PDFs
+                        const { PDFDocument } = PDFLib;
+                        const mergedPdf = await PDFDocument.create();
+                        
+                        // 3. Procesar cada PDF
+                        for (let i = 0; i < pdfUrls.length; i++) {
+                            try {
+                                // Actualizar progreso
+                                const progress = Math.round(((i + 1) / pdfUrls.length) * 100);
+                                progressBar.style.width = `${progress}%`;
+                                
+                                // Descargar el PDF (incluye credenciales para autenticación)
+                                const response = await fetch(pdfUrls[i], {
+                                    credentials: 'include'
+                                });
+                                
+                                if (!response.ok) {
+                                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                                }
+                                
+                                const arrayBuffer = await response.arrayBuffer();
+                                const pdfDoc = await PDFDocument.load(arrayBuffer);
+                                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                                pages.forEach(page => mergedPdf.addPage(page));
+                                
+                            } catch (error) {
+                                console.error(`Error procesando PDF ${i + 1}:`, error);
+                                // Continuar con los demás aunque falle uno
+                            }
+                        }
+                        
+                        // 4. Descargar el PDF combinado
+                        const mergedPdfBytes = await mergedPdf.save();
+                        const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                        const fileName = `Documentos_${"{{ $usuario->nombre }}".replace(/ /g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+                        
+                        download(blob, fileName, 'application/pdf');
+                        
+                    } catch (error) {
+                        console.error('Error general:', error);
+                        alert('Error al combinar PDFs: ' + error.message);
+                    } finally {
+                        loadingIndicator.style.display = 'none';
+                        progressBar.style.width = '0%';
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

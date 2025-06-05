@@ -326,3 +326,25 @@ Route::post('/admin/cartas/responder/{id}', [CartaAdminController::class, 'respo
 
 
      Route::post('/register', [AuthController::class, 'register'])->name('register');
+
+
+
+
+     // routes/web.php
+
+
+
+
+Route::middleware(['auth'])->group(function () {
+    // Rutas para archivos
+    Route::resource('archivos', ArchivoController::class)->except(['create', 'edit']);
+    
+    // Ruta para agregar nuevos tipos de documentos
+    Route::post('/admin/tipos-documentos', [ArchivoController::class, 'addDocumentType'])
+         ->name('admin.add-document-type');
+         
+    // Rutas adicionales
+    Route::get('/archivos/{id}/aprobar', [ArchivoController::class, 'aprobar'])->name('archivos.aprobar');
+    Route::post('/archivos/{id}/rechazar', [ArchivoController::class, 'rechazar'])->name('archivos.rechazar');
+    Route::get('/mis-archivos', [ArchivoController::class, 'verArchivos'])->name('archivos.ver');
+});

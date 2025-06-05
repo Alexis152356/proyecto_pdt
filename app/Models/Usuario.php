@@ -48,6 +48,8 @@ class Usuario extends Authenticatable
 {
     return $this->hasMany(Carta::class, 'usuario_id'); // Especifica explícitamente la clave foránea
 }
+
+
 }
 
 // Asegúrate que no haya nada (ni siquiera espacios) después de esta línea
