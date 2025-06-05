@@ -38,9 +38,9 @@ class Usuario extends Authenticatable
         return $this->hasMany(Documento::class, 'usuario_id');
     }
 
-  public function archivos()
+ public function archivos()
 {
-    return $this->hasMany(Archivo::class, 'usuario_id'); // Cambiar a usuario_id para consistencia
+    return $this->hasMany(Archivo::class, 'user_id');
 }
 
     
